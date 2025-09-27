@@ -88,6 +88,8 @@ make package/hplip/compile -j $(nproc) V=s
 将 ipk 文件上传到 OpenWrt 设备并执行：
 
 ```bash
+opkg remove kmod-usb-printer
+opkg update
 opkg install *.ipk
 
 # 惠普打印机安装插件
@@ -100,4 +102,3 @@ hp-setup -i
 ## 注意事项
 
 - 新版 OpenWrt 使用[这个仓库](https://github.com/woniuzfb/openwrt-24-printing-packages)
-- 安装打印包 ipk 前删除 `kmod-usb-printer`，重启 OpenWrt
