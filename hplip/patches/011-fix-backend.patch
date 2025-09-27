@@ -1,0 +1,19 @@
+--- a/prnt/backend/hp.c
++++ b/prnt/backend/hp.c
+@@ -774,6 +774,7 @@
+ 
+    DBG("job start %s prt_mode=%d statustype=%d\n", argv[0], ma.prt_mode, ma.statustype); 
+ 
++   memset(&pa, 0, sizeof(pa));
+    pa.pjl_device = 0;
+    if (strcasestr(argv[0], ":/net") == NULL && (ma.statustype==HPMUD_STATUSTYPE_PJL || ma.statustype==HPMUD_STATUSTYPE_PJLPML))
+       pa.pjl_device = 1;
+@@ -986,7 +987,7 @@
+       while (!pa.done)
+          pthread_cond_wait(&pa.done_cond, &pa.mutex);
+       pthread_mutex_unlock(&pa.mutex);
+-      pthread_cancel(pa.tid);   
++      pa.tid = 0; 
+       pthread_mutex_destroy(&pa.mutex);
+       pthread_cond_destroy(&pa.done_cond);
+    }

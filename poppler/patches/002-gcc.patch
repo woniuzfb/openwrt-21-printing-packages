@@ -1,0 +1,14 @@
+--- a/poppler/GfxFont.cc
++++ b/poppler/GfxFont.cc
+@@ -179,9 +179,9 @@
+ 
+ GfxFontLoc::~GfxFontLoc() = default;
+ 
+-GfxFontLoc::GfxFontLoc(GfxFontLoc &&other) noexcept = default;
++GfxFontLoc::GfxFontLoc(GfxFontLoc &&other) = default;
+ 
+-GfxFontLoc &GfxFontLoc::operator=(GfxFontLoc &&other) noexcept = default;
++GfxFontLoc &GfxFontLoc::operator=(GfxFontLoc &&other) = default;
+ 
+ void GfxFontLoc::setPath(GooString *pathA)
+ {

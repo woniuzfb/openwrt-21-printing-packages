@@ -1,0 +1,68 @@
+#!/bin/sh
+
+[ "$ACTION" != "bind" ] && exit 0
+[ "$SUBSYSTEM" != "usb" ] && exit 0
+
+logger -t hp-hotplug "Device detected: PRODUCT=$PRODUCT DEVPATH=$DEVPATH"
+
+# Check if it's an HP device (vendor ID 03f0 = 3f0 in hex)
+echo "$PRODUCT" | grep -q "^3f0/" || exit 0
+
+logger -t hp-hotplug "HP device confirmed: $PRODUCT"
+
+VENDOR_ID=$(echo "$PRODUCT" | cut -d'/' -f1)
+PRODUCT_ID=$(echo "$PRODUCT" | cut -d'/' -f2)
+
+DEVICE_PATH="/sys$DEVPATH"
+
+if [ -d "$DEVICE_PATH" ]; then
+    if [ -f "$DEVICE_PATH/bInterfaceClass" ]; then
+        INTERFACE_CLASS=$(cat "$DEVICE_PATH/bInterfaceClass")
+        INTERFACE_SUBCLASS=$(cat "$DEVICE_PATH/bInterfaceSubClass" 2>/dev/null)
+    else
+        INTERFACE_CLASS=""
+        INTERFACE_SUBCLASS=""
+
+        logger -t hp-hotplug "Parent device detected, checking for interfaces..."
+
+        for interface in "$DEVICE_PATH"/*:*; do
+            if [ -f "$interface/bInterfaceClass" ]; then
+                INTERFACE_CLASS=$(cat "$interface/bInterfaceClass")
+                INTERFACE_SUBCLASS=$(cat "$interface/bInterfaceSubClass" 2>/dev/null)
+                logger -t hp-hotplug "Found printer interface at $(basename "$interface")"
+            fi
+        done
+    fi
+
+    logger -t hp-hotplug "Interface class: $INTERFACE_CLASS/$INTERFACE_SUBCLASS"
+
+    if [ "$INTERFACE_CLASS" = "07" ] && [ "$INTERFACE_SUBCLASS" = "01" ] && [ "$VENDOR_ID" = "3f0" ]; then
+        logger -t hp-hotplug "Printer interface detected!"
+
+        DEVICE=$(basename "$DEVICE_PATH")
+        echo -1 > /sys/bus/usb/devices/$DEVICE/power/autosuspend
+        echo -1 > /sys/bus/usb/devices/$DEVICE/power/autosuspend_delay_ms
+
+        USB_DEVICE="/dev/$DEVNAME"
+        if [ -e "$USB_DEVICE" ]; then
+            chown root:nogroup "$USB_DEVICE" 2>/dev/null
+            chmod 0664 "$USB_DEVICE" 2>/dev/null
+            logger -t hp-hotplug "Set permissions on $USB_DEVICE"
+        fi
+
+        if [ ! -e /var/lib/hp/hplip.state ] 
+        then
+            cd ~/.hplip/plugin_tmp
+            logger -t hp-hotplug "Installing HPLIP plugin..."
+            python ~/.hplip/plugin_tmp/installPlugin.py
+        fi
+
+        if [ -x "/usr/bin/hp-config_usb_printer" ]; then
+            logger -t hp-hotplug "Running hp-config_usb_printer $BUSNUM:$DEVNUM"
+            #nohup /usr/bin/hp-config_usb_printer "$BUSNUM:$DEVNUM" >/dev/null 2>&1 &
+            /usr/bin/hp-config_usb_printer "$BUSNUM:$DEVNUM"
+        fi
+    fi
+fi
+
+exit 0

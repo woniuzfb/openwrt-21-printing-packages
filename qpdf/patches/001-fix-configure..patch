@@ -1,0 +1,18 @@
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -157,15 +157,6 @@
+   set(qpdf_LIBVERSION ${qpdf_SOVERSION}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH})
+ endif()
+ 
+-if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
+-  message(FATAL_ERROR "
+-Please build with cmake in a subdirectory, e.g.
+- mkdir build
+- cmake ..
+- cmake --build .
+-Please remove CMakeCache.txt and the CMakeFiles directories.")
+-endif()
+-
+ if(CXX_NEXT)
+   set(CMAKE_CXX_STANDARD 20)
+ else()

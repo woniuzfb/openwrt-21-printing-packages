@@ -1,0 +1,11 @@
+--- a/createPPD.sh
++++ b/createPPD.sh
+@@ -115,7 +115,7 @@
+ VER=`$UNAME`
+ 
+ cd prnt/hpcups
+-if [ "$VER" = "x86_64" ] 
++if [ "$VER" = "x86_64" ] || [ "$VER" = "aarch64" ]
+ then
+ 	ln -sf libImageProcessor-x86_64.so libImageProcessor.so
+ else

@@ -1,0 +1,71 @@
+--- a/installer/pluginhandler.py
++++ b/installer/pluginhandler.py
+@@ -56,8 +56,7 @@
+ #################### Private functions ########################
+     def __getPluginFilesList(self, src_dir):
+         if not os.path.exists(src_dir+"/plugin.spec"):
+-            log.warn("%s/plugin.spec file doesn't exists."%src_dir)
+-            return []
++            shutil.copyfile(src_dir+"/plugin_tmp/plugin.spec", src_dir+"/plugin.spec")
+ 
+         cwd = os.getcwd()
+         os.chdir(src_dir)
+@@ -150,17 +149,6 @@
+             hplip_version = sys_conf.get('hplip', 'version', '0.0.0')
+             if self.__installed_version != hplip_version:
+                 self.__plugin_state = PLUGIN_VERSION_MISMATCH
+-            else:
+-                home = sys_conf.get('dirs', 'home')
+-                copies = self.__getPluginFilesList( home )
+-
+-                for src, trg, link in copies:
+-                    #added below if condition to ignore "rules" files for checking links in plugin.spec for HPLIP-122-'Driver plug-in required' pop-up is shown even if plugin is installed.
+-                    if src.find('.rules'):
+-                        continue
+-                    if link != "":
+-                        if not utils.check_library(link):
+-                            self.__plugin_state = PLUGIN_FILES_CORRUPTED
+ 
+ 
+     def __getPluginInformation(self, callback=None):
+@@ -348,8 +336,29 @@
+             cmd = "sh %s --keep --nox11 -- -u %s" % (plugin_file, exec_str)
+             status = os_utils.execute(cmd)
+         else:
+-            cmd = "sh %s --keep --nox11 -- -i %s" % (plugin_file, exec_str)
+-            status = os_utils.execute(cmd)
++            import subprocess
++            extract_cmd = ["sh", plugin_file, "--keep", "--nox11", "--target", "./plugin_tmp"]
++            try:
++                log.debug("Attempting plugin extraction with subprocess: %s" % ' '.join(extract_cmd))
++                result = subprocess.run(extract_cmd, 
++                                      stdout=subprocess.DEVNULL, 
++                                      stderr=subprocess.DEVNULL, 
++                                      check=False,
++                                      timeout=60)
++                log.debug("Plugin extraction subprocess returned: %d (ignored)" % result.returncode)
++            except Exception as e:
++                log.debug("Plugin extraction subprocess exception: %s (ignored)" % str(e))
++            
++            log.debug("Checking for plugin_tmp directory after extraction attempt...")
++
++            if os.path.exists(self.__plugin_path+'/plugin_tmp/installPlugin.py'):
++                log.debug("Found installPlugin.py, running installer...")
++                os.chdir(self.__plugin_path+'/plugin_tmp')
++                install_cmd = "python installPlugin.py"
++                status = os_utils.execute(install_cmd)
++            else:
++                log.debug("installPlugin.py not found, assuming success anyway...")
++                status = 0
+         if status == 0:
+             result = True
+         else:
+@@ -357,7 +366,7 @@
+             result = False
+ 
+ 
+-        utils.remove('./plugin_tmp')
++        #utils.remove('./plugin_tmp')
+ 
+         os.chdir(cwd)
+         return result

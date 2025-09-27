@@ -1,0 +1,17 @@
+#!/bin/sh /etc/rc.common
+START=50
+
+start() {
+	mkdir -m 0755 -p /var/cache/cups
+	mkdir -m 0755 -p /var/cups
+	mkdir -m 0755 -p /var/spool/cups/tmp
+	service_start /usr/sbin/cupsd
+}
+
+stop() {
+	service_stop /usr/sbin/cupsd
+}
+
+reload() {
+	service_reload /usr/sbin/cupsd
+}

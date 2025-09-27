@@ -1,0 +1,14 @@
+--- a/poppler/GfxFont.h
++++ b/poppler/GfxFont.h
+@@ -122,9 +122,9 @@
+     ~GfxFontLoc();
+ 
+     GfxFontLoc(const GfxFontLoc &) = delete;
+-    GfxFontLoc(GfxFontLoc &&) noexcept;
++    GfxFontLoc(GfxFontLoc &&);
+     GfxFontLoc &operator=(const GfxFontLoc &) = delete;
+-    GfxFontLoc &operator=(GfxFontLoc &&other) noexcept;
++    GfxFontLoc &operator=(GfxFontLoc &&other);
+ 
+     // Set the 'path' string from a GooString on the heap.
+     // Ownership of the object is taken.
