@@ -1,0 +1,11 @@
+#!/bin/sh /etc/rc.common
+
+START=98
+
+start() {
+    if [ -f /root/.hplip/plugin_tmp/installPlugin.py ]
+    then
+        cd /root/.hplip/plugin_tmp
+        /usr/bin/python /root/.hplip/plugin_tmp/installPlugin.py
+    fi
+}

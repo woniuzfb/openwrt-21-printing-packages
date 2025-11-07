@@ -37,6 +37,7 @@ endef
 define Package/hplip/conffiles
 /etc/hp/hplip.conf
 /etc/hotplug.d/usb/10-hp-printer
+/etc/init.d/hplip-plugin
 endef
 
 define Package/hplip-scan
@@ -102,6 +103,9 @@ define Package/hplip/install
 
 	$(INSTALL_DIR) $(1)/etc/hotplug.d/usb
 	$(CP) ./files/etc/hotplug.d/usb/10-hp-printer $(1)/etc/hotplug.d/usb
+
+	$(INSTALL_DIR) $(1)/etc/init.d
+	$(INSTALL_BIN) ./files/etc/init.d/hplip-plugin $(1)/etc/init.d/hplip-plugin
 
 	$(INSTALL_DIR) $(1)/usr/share/hplip/data/ldl
 	$(CP) $(PKG_INSTALL_DIR)/usr/share/hplip/data/ldl/* $(1)/usr/share/hplip/data/ldl
